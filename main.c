@@ -137,15 +137,18 @@ int main(int argc, char *argv[]) {
         pid_t pid = fork();
         if (pid == 0) {
             long bytes = search_in_file(full, pattern, m);
-            int found = (bytes >= 0 && bytes < st.st_size);
+            int found = 0
 
-            if (found) found_count++;
-
-            printf("[PID %6d] File: %-30s | bytes: %8ld | %s\n",
-                   getpid(),
-                   entry->d_name,
-                   bytes,
-                   found ? "FOUND" : "not found");
+            if (bytes >= 0 && bytes < st.st_size) {
+                found = 1;
+                printf("[PID %6d] File: %-30s | bytes: %8ld (found at byte %ld) | FOUND\n",
+                       getpid(), entry->d_name, bytes, bytes - m);
+            } else if (bytes == st.st_size) {
+                printf("[PID %6d] File: %-30s | bytes: %8ld (whole file) | not found\n",
+                       getpid(), entry->d_name, bytes);
+            } else {
+                printf("[PID %6d] File: %-30s | ERROR opening file\n", getpid(), entry->d_name);
+            }
 
             exit(found ? 1 : 0);
         }
