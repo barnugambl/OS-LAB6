@@ -26,20 +26,13 @@ long search_in_file(const char *filename, const unsigned char *pattern, int m) {
     fread(buf, 1, size, f);
     fclose(f);
 
-    long bytes_viewed = 0;
-    long found_position = -1;
-
     for (long i = 0; i <= size - m; i++) {
-        bytes_viewed++;
         if (memcmp(buf + i, pattern, m) == 0) {
-            found_position = bytes_viewed;
-            break;
+            return i + m;  
         }
     }
-
     free(buf);
-
-    return (found_position != -1) ? found_position : size;
+    return size;
 }
 
 int main(int argc, char *argv[]) {
