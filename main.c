@@ -45,7 +45,6 @@ long search_in_file(const char *filename, const unsigned char *pattern, int m) {
 int main(int argc, char *argv[]) {
     if (argc != 4) {
         printf("Usage: %s <directory> <pattern> <N>\n", argv[0]);
-        printf("Example: %s /home/user \"hello\" 5\n", argv[0]);
         return 1;
     }
     
