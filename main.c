@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     int file_count = 0;
     int found_count = 0;
 
-    DIR *dir = opendir(dirpath);
+    dir = opendir(dirpath);
     if (!dir) {
         printf("Error: Directory '%s' does not exist or cannot be accessed!\n", dirpath);
         return 1;
