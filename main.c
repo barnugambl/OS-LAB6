@@ -42,14 +42,23 @@ long search_in_file(const char *filename, const unsigned char *pattern, int m) {
     return (found_position != -1) ? found_position : size;
 }
 
-int main() {
-    char dirpath[MAX_PATH];
-    char text_pattern[MAX_PATTERN];
-    int m, N;
+int main(int argc, char *argv[]) {
+    if (argc != 4) {
+        printf("Usage: %s <directory> <pattern> <N>\n", argv[0]);
+        printf("Example: %s /home/user \"hello\" 5\n", argv[0]);
+        return 1;
+    }
+    
+    char *dirpath = argv[1];
+    char *text_pattern = argv[2];
+    int N = atoi(argv[3]);  
 
-    printf("Enter directory path: ");
-    fgets(dirpath, sizeof(dirpath), stdin);
-    dirpath[strcspn(dirpath, "\n")] = '\0';
+    int m;
+    DIR *dir;
+    struct dirent *entry;
+    int active = 0;
+    int file_count = 0;
+    int found_count = 0;
 
     DIR *dir = opendir(dirpath);
     if (!dir) {
