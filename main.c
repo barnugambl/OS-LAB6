@@ -109,11 +109,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    struct dirent *entry;
-    int active = 0;
-    int file_count = 0;
-    int found_count = 0;
-
     unsigned char pattern[MAX_PATTERN];
     for (int i = 0; i < m; i++) {
         pattern[i] = (unsigned char)text_pattern[i];
