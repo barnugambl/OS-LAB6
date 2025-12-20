@@ -200,5 +200,10 @@ int main() {
             }
         }
     }
+
+    printf("\n=== Search completed ===\n");
+    printf("Total files processed: %d\n", file_count);
+    printf("Files with pattern found: %d\n", found_count);
+    
     return 0;
 }
