@@ -13,13 +13,13 @@
 
 long search_in_file(const char *filename, const unsigned char *pattern, int m) {
     FILE *f = fopen(filename, "rb");
-    if (!f) return -1;
+    if (!f) return -1; 
 
     unsigned char buffer[BUFFER_SIZE];
     long total_read = 0;
-    long found_pos = -1;
+    long found_pos = -2; 
     
-    while (!feof(f)) {
+    while (1) {
         size_t bytes_read = fread(buffer, 1, BUFFER_SIZE, f);
         if (bytes_read == 0) break;
         
@@ -30,7 +30,8 @@ long search_in_file(const char *filename, const unsigned char *pattern, int m) {
             }
         }
         
-        if (found_pos != -1) break;
+        if (found_pos >= 0) break; 
+        
         total_read += bytes_read;
         
         if (bytes_read == BUFFER_SIZE && m > 1) {
@@ -49,7 +50,6 @@ int main() {
     int N;
     int m;
 
-    // Получаем входные данные от пользователя
     printf("Enter directory path: ");
     if (fgets(dirpath, sizeof(dirpath), stdin) == NULL) {
         printf("Error reading directory path!\n");
@@ -57,7 +57,6 @@ int main() {
     }
     dirpath[strcspn(dirpath, "\n")] = '\0';
     
-    // Проверяем директорию
     DIR *test_dir = opendir(dirpath);
     if (!test_dir) {
         printf("Error: Directory '%s' does not exist or cannot be accessed!\n", dirpath);
@@ -82,7 +81,6 @@ int main() {
         return 1;
     }
     
-    // Получаем максимальное количество процессов
     while (1) {
         long max_proc = sysconf(_SC_CHILD_MAX);
         printf("Enter N (max number of processes, 1-%ld): ", max_proc);
@@ -92,7 +90,7 @@ int main() {
             while (getchar() != '\n') {}
             continue;
         }
-        getchar(); // Убираем оставшийся '\n'
+        getchar(); 
         
         if (N <= 0) {
             printf("Error: N must be positive!\n");
@@ -107,14 +105,12 @@ int main() {
         break;
     }
 
-    // Открываем директорию для поиска
     DIR *dir = opendir(dirpath);
     if (!dir) {
         printf("Error: Cannot open directory '%s'\n", dirpath);
         return 1;
     }
 
-    // Преобразуем паттерн в unsigned char
     unsigned char pattern[MAX_PATTERN];
     for (int i = 0; i < m; i++) {
         pattern[i] = (unsigned char)text_pattern[i];
@@ -130,17 +126,13 @@ int main() {
     printf("Pattern: '%s' (%d bytes)\n", text_pattern, m);
     printf("Max processes: %d\n\n", N);
 
-    // Обрабатываем файлы в директории
     while ((entry = readdir(dir)) != NULL) {
-        // Пропускаем . и ..
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) 
             continue;
 
-        // Формируем полный путь к файлу
         char full[MAX_PATH];
         snprintf(full, sizeof(full), "%s/%s", dirpath, entry->d_name);
 
-        // Проверяем, что это обычный файл
         struct stat st;
         if (stat(full, &st) != 0) {
             printf("Warning: Cannot access file: %s\n", entry->d_name);
@@ -154,7 +146,6 @@ int main() {
 
         file_count++;
 
-        // Ждем, если достигли максимума процессов
         while (active >= N) {
             int status;
             pid_t pid = wait(&status);
@@ -167,26 +158,25 @@ int main() {
             }
         }
 
-        // Создаем дочерний процесс
         pid_t pid = fork();
-        if (pid == 0) { // Дочерний процесс
+        if (pid == 0) { 
             long pos = search_in_file(full, pattern, m);
             
             if (pos == -1) {
                 printf("[PID %6d] File: %-30s | ERROR opening file\n", 
                        getpid(), entry->d_name);
                 exit(0);
-            } else if (pos >= 0) {
+            } else if (pos >= 0) { 
                 printf("[PID %6d] File: %-30s | Found at byte: %8ld | size: %8ld | FOUND\n",
                        getpid(), entry->d_name, pos, (long)st.st_size);
                 exit(1);
-            } else {
+            } else if (pos == -2) {  
                 printf("[PID %6d] File: %-30s | Not found | size: %8ld\n",
                        getpid(), entry->d_name, (long)st.st_size);
                 exit(0);
             }
         }
-        else if (pid > 0) { // Родительский процесс
+        else if (pid > 0) { 
             active++;
             printf("Started process %6d for: %s (active: %d/%d)\n",
                    pid, entry->d_name, active, N);
@@ -199,7 +189,6 @@ int main() {
 
     closedir(dir);
 
-    // Ждем завершения всех оставшихся процессов
     while (active > 0) {
         int status;
         pid_t pid = wait(&status);
@@ -211,12 +200,5 @@ int main() {
             }
         }
     }
-
-    // Выводим итоги
-    printf("\n=== Search complete ===\n");
-    printf("Files processed: %d\n", file_count);
-    printf("Pattern found in: %d file(s)\n", found_count);
-    printf("Pattern not found in: %d file(s)\n", file_count - found_count);
-
     return 0;
 }
