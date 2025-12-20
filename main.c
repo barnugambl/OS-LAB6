@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
         pid_t pid = fork();
         if (pid == 0) {
             long bytes = search_in_file(full, pattern, m);
-            int found = 0
+            int found = 0;
 
             if (bytes >= 0 && bytes < st.st_size) {
                 found = 1;
